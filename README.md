@@ -1,6 +1,6 @@
 # Runner
 
-A Python framework for efficient hyperparameter search with GPU resource management, supporting both binary search and grid search strategies.
+A Python framework to run binary and grid search over experiment configurations with GPU resource management.
 
 ## Features
 
