@@ -1,13 +1,13 @@
+from runner.configs.base_experiment_config import BaseExperimentConfig
 from configs import pydraclass, main
 import numpy as np
 import time
 
 @pydraclass
-class DummyExperimentConfig:
+class DummyExperimentConfig(BaseExperimentConfig):
     name: str = "dummy_experiment"
     num_parameters: int = 10
     seed: int = 42
-    base_dir: str | None = None
 
 def run_experiment(config: DummyExperimentConfig):
     # Dummy experiment - returns a random number
