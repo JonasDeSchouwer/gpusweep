@@ -3,7 +3,7 @@ from configs import pydraclass, ConfigMeta
 from datetime import datetime
 from runner.gpu_utils import GPUJobResult
 from runner.grid_search import run_grid_searches
-from examples.dummy_experiment import run_experiment, DummyExperimentConfig
+from dummy_experiment import run_experiment, DummyExperimentConfig
 from runner.configs.search_configs import GridSearchConfig
 import copy
 import numpy as np
@@ -11,12 +11,11 @@ import random
 
 @pydraclass
 class ExperimentGridSearchConfig(GridSearchConfig):
-    def get_experiment_config_and_base_dir(self, num_parameters: int, seed: int) -> tuple[ConfigMeta, str]:
+    def get_experiment_config_and_base_dir(self, seed: int) -> tuple[ConfigMeta, str]:
         # Extract num_parameters and seed from prop_values (the property names come from sweep_props)
         config = copy.deepcopy(self.base_experiment_config)
-        config.num_parameters = num_parameters
         config.seed = seed
-        config.base_dir = f"{self.base_dir}/num_parameters_{num_parameters}_seed_{seed}"
+        config.base_dir = f"{self.base_dir}/_seed_{seed}"
         config.finalize()
         return config, config.base_dir
 

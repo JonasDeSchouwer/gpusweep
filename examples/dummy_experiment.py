@@ -7,6 +7,7 @@ class DummyExperimentConfig:
     name: str = "dummy_experiment"
     num_parameters: int = 10
     seed: int = 42
+    base_dir: str | None = None
 
 def run_experiment(config: DummyExperimentConfig):
     # Dummy experiment - returns a random number

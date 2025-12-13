@@ -3,7 +3,7 @@ from configs import pydraclass, ConfigMeta
 from datetime import datetime
 from runner.gpu_utils import GPUJobResult
 from runner.binary_search import run_binary_searches
-from examples.dummy_experiment import run_experiment, DummyExperimentConfig
+from dummy_experiment import run_experiment, DummyExperimentConfig
 from runner.configs.search_configs import BinarySearchConfig
 import copy
 import numpy as np
