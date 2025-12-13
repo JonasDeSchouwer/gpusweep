@@ -21,13 +21,14 @@ pip install -e .
 
 ### 1. Define Your Experiment
 
-Create an experiment configuration and run function:
+Create an experiment configuration and run function. Experiment configs must inherit from `BaseExperimentConfig`:
 
 ```python
 from configs import pydraclass, main
+from runner.configs.base_experiment_config import BaseExperimentConfig
 
 @pydraclass
-class DummyExperimentConfig:
+class DummyExperimentConfig(BaseExperimentConfig):
     name: str = "dummy_experiment"
     num_parameters: int = 10
     seed: int = 42
@@ -50,6 +51,8 @@ Find the optimal value for a hyperparameter using binary search:
 from runner.binary_search import run_binary_searches
 from runner.configs.search_configs import BinarySearchConfig
 from examples.dummy_experiment import run_experiment, DummyExperimentConfig
+import copy
+import numpy as np
 
 @pydraclass
 class ExperimentBinarySearchConfig(BinarySearchConfig):
@@ -73,6 +76,7 @@ class ExperimentBinarySearchConfig(BinarySearchConfig):
         result = results[best_idx]
         # Return (success, result) - success is True if result >= threshold
         return result.result >= 0.5, result
+```
 
 # Run binary search
 configs = [ExperimentBinarySearchConfig(
@@ -133,6 +137,43 @@ configs = [ExperimentGridSearchConfig(
 run_grid_searches(configs, max_gpus=4, simultaneous_jobs_per_gpu=2)
 ```
 
+## Running Examples
+
+The `examples/` directory contains complete working examples that demonstrate how to use the framework:
+
+### Basic Experiment
+
+Run a simple experiment:
+
+```bash
+cd examples
+python dummy_experiment.py
+```
+
+### Binary Search Example
+
+Run the binary search example:
+
+```bash
+cd examples
+python example_binary_search.py
+```
+
+This will run multiple binary searches in parallel, finding optimal values for `num_parameters` across different experiment configurations.
+
+### Grid Search Example
+
+Run the grid search example:
+
+```bash
+cd examples
+python example_grid_search.py
+```
+
+This will run multiple grid searches, exhaustively testing combinations of hyperparameters.
+
+**Note**: Make sure you have the package installed (`pip install -e .`) and that you're running from the project root or have the proper Python path configured.
+
 ## Architecture
 
 ### Configuration System
@@ -143,6 +184,7 @@ The framework uses a strict configuration system based on dataclasses with the `
 - **Nested Configs**: Support for nested configuration objects
 - **Finalization**: Automatic recursive finalization of configs
 - **CLI Support**: Built-in CLI argument parsing
+- **Base Experiment Config**: All experiment configs must inherit from `BaseExperimentConfig`, which provides the `base_dir` field
 
 See `configs/README.md` for detailed documentation on the configuration system.
 
