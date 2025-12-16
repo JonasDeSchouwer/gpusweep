@@ -17,7 +17,7 @@ from typing import Any, Type, Callable, TypeVar
 
 import yaml
 
-from moes.configs.base_config import _is_config_instance
+from configs.base_config import _is_config_instance
 
 
 def apply_overrides(

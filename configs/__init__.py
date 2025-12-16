@@ -5,8 +5,8 @@ Provides @pydraclass decorator for creating strict, auto-finalizing config class
 with enhanced CLI parsing support.
 """
 
-from moes.configs.base_config import pydraclass, REQUIRED, ConfigMeta
-from moes.configs.cli import main, run, apply_overrides
+from configs.base_config import pydraclass, REQUIRED, ConfigMeta
+from configs.cli import main, run, apply_overrides
 
 __all__ = [
     'pydraclass',
