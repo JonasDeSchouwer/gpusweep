@@ -4,12 +4,8 @@ A Python framework to run binary and grid search over experiment configurations 
 
 ## Features
 
-- **Binary Search**: Efficiently find optimal hyperparameter values within a range
-- **Grid Search**: Exhaustive search across all combinations of hyperparameter values
-- **GPU Management**: Automatic GPU scheduling with support for parallel jobs per GPU
-- **Configuration System**: Strict, validated configuration classes with nested config support
-- **Async Execution**: Asynchronous job scheduling for optimal resource utilization
-- **Result Aggregation**: Flexible result aggregation across multiple runs/seeds
+- **Binary Search**: Run a binary search over parameters of experiment configs
+- **Grid Search**: Run a grid search over parameters of experiment configs
 
 ## Installation
 
