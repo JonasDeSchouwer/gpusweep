@@ -166,8 +166,17 @@ class GPUScheduler:
                 lambda: _run_single_job(job, gpu_id)
             )
             return result
+
+    def shutdown(self):
+        """Explicitly shutdown the executor."""
+        if hasattr(self, 'executor'):
+            self.executor.shutdown(wait=True)
     
     def __del__(self):
         """Cleanup executor on deletion."""
         if hasattr(self, 'executor'):
-            self.executor.shutdown(wait=False)
+            try:
+                self.executor.shutdown(wait=False)
+            except Exception as e:
+                print(f"Error shutting down executor: {str(e)}", flush=True)
+                pass
