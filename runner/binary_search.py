@@ -93,4 +93,7 @@ async def run_binary_searches_wrapper(configs, gpu_scheduler):
 
 def run_binary_searches(configs: list[BinarySearchConfig], max_gpus: int | None = None, simultaneous_jobs_per_gpu: int | None = None):
     gpu_scheduler = GPUScheduler(max_gpus=max_gpus, simultaneous_jobs_per_gpu=simultaneous_jobs_per_gpu)
-    return asyncio.run(run_binary_searches_wrapper(configs, gpu_scheduler))
+    try:
+        return asyncio.run(run_binary_searches_wrapper(configs, gpu_scheduler))
+    finally:
+        gpu_scheduler.shutdown()

@@ -12,6 +12,8 @@ dependencies = [
     "numpy>=1.24.0",      # Current: 1.26.0 - avoid NumPy 2.0 breaking changes
     "tqdm>=4.65.0",       # Current: 4.67.1 - allow minor updates
     "matplotlib>=3.7.0",  # Current: 3.10.3 - allow minor updates
+    "PyYAML>=6.0.0",      # Current: 6.0.3 - allow minor updates
+    "pandas>=2.0.0",      # Current: 2.3.3 - allow minor updates
 ]
 
 [tool.setuptools]
