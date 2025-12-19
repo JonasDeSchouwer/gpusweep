@@ -1,10 +1,10 @@
 from typing import Any
 from pydrafig import pydraclass, ConfigMeta
 from datetime import datetime
-from runner.gpu_utils import GPUJobResult
-from runner.binary_search import run_binary_searches
+from gpusweep.gpu_utils import GPUJobResult
+from gpusweep.binary_search import run_binary_searches
 from dummy_experiment import run_experiment, DummyExperimentConfig
-from runner.configs.search_configs import BinarySearchConfig
+from gpusweep.configs.search_configs import BinarySearchConfig
 import copy
 import numpy as np
 import random

@@ -1,22 +1,29 @@
-from pydrafig import pydraclass, ConfigMeta
-from typing import Any
-from runner.gpu_utils import GPUJobResult
+from __future__ import annotations
+
+from typing import Any, Protocol
+
+from pydrafig import pydraclass
+from gpusweep.gpu_utils import GPUJobResult
+
+
+class ConfigLike(Protocol):
+    def finalize(self) -> None: ...
 
 @pydraclass
 class _BaseSearchConfig:
     base_dir: str | None = None
     sweep_props: dict[str, list[Any]] | None = None
-    base_experiment_config: ConfigMeta | None = None
+    base_experiment_config: ConfigLike | None = None
 
-    def _get_experiment_config_and_base_dir(self, **prop_values) -> tuple[ConfigMeta, str]:
+    def _get_experiment_config_and_base_dir(self, **prop_values) -> tuple[ConfigLike, str]:
         config, base_dir = self.get_experiment_config_and_base_dir(**prop_values)
         config.finalize() # in case user forgot
         return config, base_dir
 
-    def get_experiment_config_and_base_dir(self, **prop_values) -> tuple[ConfigMeta, str]:
+    def get_experiment_config_and_base_dir(self, **prop_values) -> tuple[ConfigLike, str]:
         pass
 
-    def run_experiment_config(self, config: ConfigMeta) -> Any:
+    def run_experiment_config(self, config: ConfigLike) -> Any:
         pass
 
     def agg_results(self, results: list[GPUJobResult]) -> Any:

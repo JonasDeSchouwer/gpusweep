@@ -3,12 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "runner"
+name = "gpusweep"
 version = "0.0.1"
-description = "runner"
+description = "GPU runner: binary/grid search over experiment configs with GPU scheduling"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "torch>=2.1.0",       # Current: 2.7.1 - allow minor updates
+    "torch>=2.1.0",
     "numpy>=1.24.0",      # Current: 1.26.0 - avoid NumPy 2.0 breaking changes
     "tqdm>=4.65.0",       # Current: 4.67.1 - allow minor updates
     "matplotlib>=3.7.0",  # Current: 3.10.3 - allow minor updates
@@ -18,4 +19,8 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["runner"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["gpusweep*"]

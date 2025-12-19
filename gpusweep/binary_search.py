@@ -2,9 +2,9 @@ import time
 import asyncio
 import pandas as pd
 from typing import Any, Callable
-from runner.gpu_utils import GPUScheduler
-from runner.configs.search_configs import BinarySearchConfig
-from runner.search_utils import Job, get_jobs
+from gpusweep.gpu_utils import GPUScheduler
+from gpusweep.configs.search_configs import BinarySearchConfig
+from gpusweep.search_utils import Job, get_jobs
 
 class BinarySearchJob(Job):
     def __init__(self, config: Any, base_dir: str, run_experiment_fn: Callable[[Any], Any]):

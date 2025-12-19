@@ -1,4 +1,4 @@
-from runner.configs.base_experiment_config import BaseExperimentConfig
+from gpusweep.configs.base_experiment_config import BaseExperimentConfig
 from pydrafig import pydraclass, main
 import numpy as np
 import time

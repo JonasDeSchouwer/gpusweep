@@ -3,6 +3,7 @@ Name: runner
 Version: 0.0.1
 Summary: runner
 Requires-Python: >=3.10
+Description-Content-Type: text/markdown
 Requires-Dist: torch>=2.1.0
 Requires-Dist: numpy>=1.24.0
 Requires-Dist: tqdm>=4.65.0
@@ -10,3 +11,197 @@ Requires-Dist: matplotlib>=3.7.0
 Requires-Dist: PyYAML>=6.0.0
 Requires-Dist: pandas>=2.0.0
 Requires-Dist: pydrafig>=0.1.1
+
+# Runner
+
+A Python framework to run binary and grid search over experiment pydrafig configurations with GPU resource management.
+
+## Features
+
+- **Binary Search**: Run a binary search over parameters of experiment configs
+- **Grid Search**: Run a grid search over parameters of experiment configs
+
+## Installation
+
+```bash
+pip install -e .
+```
+
+## Quick Start
+
+### 1. Define Your Experiment
+
+Create an experiment configuration and run function. Experiment configs must inherit from `BaseExperimentConfig`:
+
+```python
+from pydrafig import pydraclass, main
+from runner.configs.base_experiment_config import BaseExperimentConfig
+
+@pydraclass
+class DummyExperimentConfig(BaseExperimentConfig):
+    name: str = "dummy_experiment"
+    num_parameters: int = 10
+    seed: int = 42
+
+def run_experiment(config: DummyExperimentConfig):
+    # Your experiment logic here
+    result = perform_training(config)
+    return result
+
+@main(DummyExperimentConfig)
+def main(config: DummyExperimentConfig):
+    run_experiment(config)
+```
+
+### 2. Binary Search
+
+Find the optimal value for a hyperparameter using binary search:
+
+```python
+from runner.binary_search import run_binary_searches
+from runner.configs.search_configs import BinarySearchConfig
+from examples.dummy_experiment import run_experiment, DummyExperimentConfig
+import copy
+import numpy as np
+
+@pydraclass
+class ExperimentBinarySearchConfig(BinarySearchConfig):
+    def get_experiment_config_and_base_dir(self, num_parameters: int, seed: int):
+        config = copy.deepcopy(self.base_experiment_config)
+        config.num_parameters = num_parameters
+        config.seed = seed
+        config.base_dir = f"{self.base_dir}/num_parameters_{num_parameters}_seed_{seed}"
+        config.finalize()
+        return config, config.base_dir
+
+    def run_experiment_config(self, config):
+        return run_experiment(config)
+
+    def agg_results(self, results: list[GPUJobResult]) -> tuple[bool, Any]:
+        # Aggregate results across seeds
+        results = [r for r in results if r.success]
+        if len(results) == 0:
+            return False, None
+        best_idx = np.argmax([r.result for r in results])
+        result = results[best_idx]
+        # Return (success, result) - success is True if result >= threshold
+        return result.result >= 0.5, result
+
+# Run binary search
+configs = [ExperimentBinarySearchConfig(
+    base_dir="./results/binary_search",
+    prop="num_parameters",  # Property to search over
+    range=(10, 100),         # Search range
+    precision=1,             # Precision for stopping
+    success_direction_lower=True,  # True if lower values are better
+    sweep_props={"seed": [42, 43, 44, 45]},  # Other properties to sweep (these will get aggregated in agg_results!)
+    base_experiment_config=DummyExperimentConfig(name="experiment_1"),
+)]
+
+run_binary_searches(configs, max_gpus=4, simultaneous_jobs_per_gpu=2)
+```
+
+### 3. Grid Search
+
+Exhaustively search all combinations of hyperparameters:
+
+```python
+from runner.grid_search import run_grid_searches
+from runner.configs.search_configs import GridSearchConfig
+from examples.dummy_experiment import run_experiment, DummyExperimentConfig
+import copy
+import numpy as np
+
+@pydraclass
+class ExperimentGridSearchConfig(GridSearchConfig):
+    def get_experiment_config_and_base_dir(self, num_parameters: int, seed: int):
+        config = copy.deepcopy(self.base_experiment_config)
+        config.num_parameters = num_parameters
+        config.seed = seed
+        config.base_dir = f"{self.base_dir}/num_parameters_{num_parameters}_seed_{seed}"
+        config.finalize()
+        return config, config.base_dir
+
+    def run_experiment_config(self, config):
+        return run_experiment(config)
+
+    def agg_results(self, results: list[GPUJobResult]):
+        # Aggregate results across all sweep_props points
+        results = [r for r in results if r.success]
+        if len(results) == 0:
+            return None
+        # Return best result
+        best_idx = np.argmax([r.result for r in results])
+        return results[best_idx]
+
+# Run grid search
+configs = [ExperimentGridSearchConfig(
+    base_dir=f"./results/grid_search_{num_parameters}",
+    sweep_props={
+        "seed": [42, 43, 44, 45]
+    },
+    base_experiment_config=DummyExperimentConfig(name="experiment_1", num_parameters=num_parameters),
+) for num_parameters in [10, 20, 30, 40]]
+
+run_grid_searches(configs, max_gpus=4, simultaneous_jobs_per_gpu=2)
+```
+
+## Running Examples
+
+The `examples/` directory contains complete working examples that demonstrate how to use the framework:
+
+### Basic Experiment
+
+Run a simple experiment:
+
+```bash
+cd examples
+python dummy_experiment.py
+```
+
+### Binary Search Example
+
+Run the binary search example:
+
+```bash
+cd examples
+python example_binary_search.py
+```
+
+This will run multiple binary searches in parallel, finding optimal values for `num_parameters` across different experiment configurations.
+
+### Grid Search Example
+
+Run the grid search example:
+
+```bash
+cd examples
+python example_grid_search.py
+```
+
+This will run multiple grid searches, exhaustively testing combinations of hyperparameters.
+
+**Note**: Make sure you have the package installed (`pip install -e .`) and that you're running from the project root or have the proper Python path configured.
+
+## Architecture
+
+### Configuration System
+
+The framework uses a strict configuration system based on dataclasses with the `@pydraclass` decorator:
+
+- **Strict Validation**: Prevents typos by validating attribute names
+- **Nested Configs**: Support for nested configuration objects
+- **Finalization**: Automatic recursive finalization of configs
+- **CLI Support**: Built-in CLI argument parsing
+- **Base Experiment Config**: All experiment configs must inherit from `BaseExperimentConfig`, which provides the `base_dir` field
+
+See `configs/README.md` for detailed documentation on the configuration system.
+
+### GPU Scheduling
+
+The `GPUScheduler` manages GPU resources:
+
+- **Round-robin Assignment**: Jobs are distributed across available GPUs
+- **Concurrent Execution**: Multiple jobs can run simultaneously on each GPU
+- **Process Isolation**: Each job runs in a separate process with proper CUDA device isolation
+- **Error Handling**: Failed jobs are tracked and reported

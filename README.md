@@ -1,6 +1,6 @@
-# Runner
+# gpusweep
 
-A Python framework to run binary and grid search over experiment configurations with GPU resource management.
+A Python framework to run binary and grid search over experiment pydrafig configurations with GPU resource management.
 
 ## Features
 
@@ -9,8 +9,14 @@ A Python framework to run binary and grid search over experiment configurations 
 
 ## Installation
 
+Install (editable, best for development):
 ```bash
 pip install -e .
+```
+
+Install from PyPI:
+```bash
+pip install gpusweep
 ```
 
 ## Quick Start
@@ -21,7 +27,7 @@ Create an experiment configuration and run function. Experiment configs must inh
 
 ```python
 from pydrafig import pydraclass, main
-from runner.configs.base_experiment_config import BaseExperimentConfig
+from gpusweep.configs.base_experiment_config import BaseExperimentConfig
 
 @pydraclass
 class DummyExperimentConfig(BaseExperimentConfig):
@@ -44,8 +50,8 @@ def main(config: DummyExperimentConfig):
 Find the optimal value for a hyperparameter using binary search:
 
 ```python
-from runner.binary_search import run_binary_searches
-from runner.configs.search_configs import BinarySearchConfig
+from gpusweep.binary_search import run_binary_searches
+from gpusweep.configs.search_configs import BinarySearchConfig
 from examples.dummy_experiment import run_experiment, DummyExperimentConfig
 import copy
 import numpy as np
@@ -92,8 +98,8 @@ run_binary_searches(configs, max_gpus=4, simultaneous_jobs_per_gpu=2)
 Exhaustively search all combinations of hyperparameters:
 
 ```python
-from runner.grid_search import run_grid_searches
-from runner.configs.search_configs import GridSearchConfig
+from gpusweep.grid_search import run_grid_searches
+from gpusweep.configs.search_configs import GridSearchConfig
 from examples.dummy_experiment import run_experiment, DummyExperimentConfig
 import copy
 import numpy as np

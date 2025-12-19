@@ -10,3 +10,6 @@ runner.egg-info/SOURCES.txt
 runner.egg-info/dependency_links.txt
 runner.egg-info/requires.txt
 runner.egg-info/top_level.txt
+runner/configs/__init__.py
+runner/configs/base_experiment_config.py
+runner/configs/search_configs.py
