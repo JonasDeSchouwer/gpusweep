@@ -1,5 +1,8 @@
-from typing import Any
-from pydrafig import pydraclass, ConfigMeta
+from __future__ import annotations
+
+from typing import Any, Protocol
+
+from pydrafig import pydraclass
 from datetime import datetime
 from gpusweep.gpu_utils import GPUJobResult
 from gpusweep.binary_search import run_binary_searches
@@ -9,9 +12,13 @@ import copy
 import numpy as np
 import random
 
+
+class ConfigLike(Protocol):
+    def finalize(self) -> None: ...
+
 @pydraclass
 class ExperimentBinarySearchConfig(BinarySearchConfig):
-    def get_experiment_config_and_base_dir(self, num_parameters:int, seed: int) -> tuple[ConfigMeta, str]:
+    def get_experiment_config_and_base_dir(self, num_parameters: int, seed: int) -> tuple[ConfigLike, str]:
         # Extract distill_samples from prop_values (the property name comes from self.prop)
         config = copy.deepcopy(self.base_experiment_config)
         config.num_parameters = num_parameters
@@ -20,7 +27,7 @@ class ExperimentBinarySearchConfig(BinarySearchConfig):
         config.finalize()
         return config, config.base_dir
 
-    def run_experiment_config(self, config: ConfigMeta) -> Any:
+    def run_experiment_config(self, config: ConfigLike) -> Any:
         # this should just run the experiment and return the result
         return run_experiment(config)
 

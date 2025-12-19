@@ -1,5 +1,8 @@
-from typing import Any
-from pydrafig import pydraclass, ConfigMeta
+from __future__ import annotations
+
+from typing import Any, Protocol
+
+from pydrafig import pydraclass
 from datetime import datetime
 from gpusweep.gpu_utils import GPUJobResult
 from gpusweep.grid_search import run_grid_searches
@@ -9,9 +12,13 @@ import copy
 import numpy as np
 import random
 
+
+class ConfigLike(Protocol):
+    def finalize(self) -> None: ...
+
 @pydraclass
 class ExperimentGridSearchConfig(GridSearchConfig):
-    def get_experiment_config_and_base_dir(self, seed: int) -> tuple[ConfigMeta, str]:
+    def get_experiment_config_and_base_dir(self, seed: int) -> tuple[ConfigLike, str]:
         # Extract num_parameters and seed from prop_values (the property names come from sweep_props)
         config = copy.deepcopy(self.base_experiment_config)
         config.seed = seed
@@ -19,7 +26,7 @@ class ExperimentGridSearchConfig(GridSearchConfig):
         config.finalize()
         return config, config.base_dir
 
-    def run_experiment_config(self, config: ConfigMeta) -> Any:
+    def run_experiment_config(self, config: ConfigLike) -> Any:
         # this should just run the experiment and return the result
         return run_experiment(config)
 
