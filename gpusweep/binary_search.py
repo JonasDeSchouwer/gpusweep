@@ -30,7 +30,7 @@ def get_jobs_for_mid(binary_config: BinarySearchConfig, mid: float):
 async def run_binary_search_job(job: BinarySearchJob, gpu_scheduler: GPUScheduler):
     return await gpu_scheduler.run_job(job)
 
-async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GPUScheduler):
+async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GPUScheduler, mid_selection_fn: Callable[[float, float], float] = lambda lo, hi: (lo + hi) / 2):
     start_time = time.time()
     lo, hi = binary_config.range
     precision = binary_config.precision
@@ -45,7 +45,7 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
     
     print(f"Binary search for {binary_config.prop} in [{lo}, {hi}], precision={precision}", flush=True)
     while (hi - lo) >= precision:
-        mid = (lo + hi) / 2
+        mid = mid_selection_fn(lo, hi)
         print(f"  Testing {binary_config.prop}={mid} (range: [{lo}, {hi}])", flush=True)
         
         # Run training job
@@ -88,12 +88,12 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
     return achieved_results, failed_results
 
 
-async def run_binary_searches_wrapper(configs, gpu_scheduler):
-    return await asyncio.gather(*[run_binary_search(config, gpu_scheduler) for config in configs])
+async def run_binary_searches_wrapper(configs, gpu_scheduler, mid_selection_fn: Callable[[float, float], float] = lambda lo, hi: (lo + hi) / 2):
+    return await asyncio.gather(*[run_binary_search(config, gpu_scheduler, mid_selection_fn) for config in configs])
 
-def run_binary_searches(configs: list[BinarySearchConfig], max_gpus: int | None = None, simultaneous_jobs_per_gpu: int | None = None):
+def run_binary_searches(configs: list[BinarySearchConfig], max_gpus: int | None = None, simultaneous_jobs_per_gpu: int | None = None, mid_selection_fn: Callable[[float, float], float] = lambda lo, hi: (lo + hi) / 2):
     gpu_scheduler = GPUScheduler(max_gpus=max_gpus, simultaneous_jobs_per_gpu=simultaneous_jobs_per_gpu)
     try:
-        return asyncio.run(run_binary_searches_wrapper(configs, gpu_scheduler))
+        return asyncio.run(run_binary_searches_wrapper(configs, gpu_scheduler, mid_selection_fn))
     finally:
         gpu_scheduler.shutdown()
