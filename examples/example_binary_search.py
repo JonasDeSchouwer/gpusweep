@@ -27,7 +27,7 @@ class ExperimentBinarySearchConfig(BinarySearchConfig):
         # this should just run the experiment and return the result
         return run_experiment(config)
 
-    def agg_results(self, results: list[GPUJobResult]) -> tuple[bool, Any]:
+    def agg_results(self, results: list[GPUJobResult]) -> tuple[bool | None, Any]:
         # result.success is True if the job completed without crashing
         results = [result for result in results if result.success]
         if len(results) == 0:

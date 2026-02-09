@@ -36,8 +36,11 @@ class BinarySearchConfig(_BaseSearchConfig):
     precision: float | None = None
     success_direction_lower: bool = True
 
-    def agg_results(self, results: list[GPUJobResult]) -> tuple[bool, Any]:
+    def agg_results(self, results: list[GPUJobResult]) -> tuple[bool | None, Any]:
         # should return (success, result)
+        # success=True: metric threshold met, search continues
+        # success=False: metric threshold not met (legitimate failure), search continues
+        # success=None: inconclusive (infrastructure error, e.g. OOM)
         pass
 
 @pydraclass

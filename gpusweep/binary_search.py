@@ -1,5 +1,6 @@
 import time
 import asyncio
+import warnings
 import pandas as pd
 from typing import Any, Callable
 from gpusweep.gpu_utils import GPUScheduler
@@ -42,6 +43,7 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
     # Track results
     achieved_results = None
     failed_results = None
+    error_results = None
     
     print(f"Binary search for {binary_config.prop} in [{lo}, {hi}], precision={precision}", flush=True)
     while (hi - lo) >= precision:
@@ -53,7 +55,17 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
         job_results = await asyncio.gather(*[run_binary_search_job(job, gpu_scheduler) for job in jobs])
         success, aggregated_result = binary_config.agg_results(job_results)
         
-        if success:
+        if success is None:
+            # Inconclusive: infrastructure error (e.g. OOM, CUDA error)
+            warnings.warn(
+                f"Inconclusive result at {binary_config.prop}={mid} due to infrastructure error. "
+                f"Treating as failure for search continuation, but result may be unreliable."
+            )
+            error_results = (mid, aggregated_result)
+            # Proceed same as failure
+            if binary_config.success_direction_lower: lo = mid
+            else: hi = mid
+        elif success:
             # Success: this value works, try smaller
             print(f"Succeeded at {mid}")
             achieved_results = (mid, aggregated_result)
@@ -67,7 +79,7 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
             else: hi = mid
     
     print(f"Binary search complete for {binary_config.prop}", flush=True)
-    print(f"Result: achieved_results={achieved_results}, failed_results={failed_results}", flush=True)
+    print(f"Result: achieved_results={achieved_results}, failed_results={failed_results}, error_results={error_results}", flush=True)
     
     end_time = time.time()
     # Save binary search results to pickle file
@@ -76,6 +88,7 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
         "precision": precision,
         "achieved_results": achieved_results,
         "failed_results": failed_results,
+        "error_results": error_results,
         "total_time": end_time - start_time,
         "timestamp": time.strftime("%Y%m%d_%H%M%S")
     }
@@ -85,7 +98,7 @@ async def run_binary_search(binary_config: BinarySearchConfig, gpu_scheduler: GP
     results_filename = f"{binary_config.base_dir}/binary_search_results_{timestamp}.pkl"
     pd.to_pickle(binary_search_results, results_filename)
     print(f"Binary search results saved to: {results_filename}", flush=True)
-    return achieved_results, failed_results
+    return achieved_results, failed_results, error_results
 
 
 async def run_binary_searches_wrapper(configs, gpu_scheduler, mid_selection_fn: Callable[[float, float], float] = lambda lo, hi: (lo + hi) / 2):
