@@ -9,7 +9,7 @@ from dataclasses import dataclass
 
 @dataclass
 class GPUJobResult:
-    success: bool
+    success: bool | None
     error: str | None
     gpu_id: int
     out_file: str | None
@@ -51,7 +51,7 @@ def _run_job_on_gpu(job: Job, gpu_id: int) -> GPUJobResult:
     except Exception as e:
         print(f"Error running job on {device_str}: {str(e)}", flush=True)
         return GPUJobResult(
-            success=False,
+            success=None,
             error=str(e),
             gpu_id=gpu_id,
             out_file=out_file,
